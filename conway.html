@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Conway's Game of Life</title>
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  </head>
+  <style>
+    table {border:0px solid black; border-collapse: collapse; margin: 0px}
+  </style>
+  <body>
+    <input type="button" onclick="run_game()" value="Next">
+    <script language="javascript" type="text/javascript">
+      td_css = "; width:30px; height:30px; border:0px solid black; padding: 0px";
+      iterations = 10;
+
+      function compute_num_cells() {
+        var $x_size = $(window).width();
+        var $y_size = $(window).height();
+
+        var x = parseInt($x_size / 31);
+        var y = parseInt($y_size / 31);
+
+        return [y, x];
+        //return [20, 20];
+      }
+
+      function create_board() {
+        var $cell_value = 0;
+
+        var $gameboard = $("<table/>");
+        $gameboard.attr("id", "current");
+        for (var i=0; i<number_cells[0]; i++) {
+          var $new_row = $("<tr/>").attr("id", i);
+          for (var j=0; j<number_cells[1]; j++) {
+            var cell_value = (Math.floor(Math.random()*2));
+            var $new_cell = $("<td/>");
+
+            if (cell_value == 1) {
+              $new_cell.attr("style", "background-color: black" + td_css);
+            }
+            else {
+              $new_cell.attr("style", "background-color: white" + td_css);
+            }
+            $new_cell.attr("class", "row-"+i+" col-"+j);
+            $new_cell.attr("value", cell_value);
+
+            $($new_row).append($new_cell);
+          }
+          $gameboard.append($new_row);
+        }
+
+        $("body").append($gameboard);
+      }
+
+      function life_or_death(y, x) {
+        var neighbors = 0;
+        var current_life = $(".row-"+y+".col-"+x).attr("value");
+        //console.log("Checking "+y+","+x);
+
+        // Check for borders
+        if (y > 0) {
+          var min_y = y - 1;
+        }
+        else {
+          var min_y = y;
+        }
+        if (y < number_cells[0] - 1) {
+          var max_y = y + 1;
+        }
+        else {
+          var max_y = y;
+        }
+        if (x > 0) {
+          var min_x = x - 1;
+        }
+        else {
+          var min_x = x;
+        }
+        if (x < number_cells[1] - 1) {
+          var max_x = x + 1;
+        }
+        else {
+          var max_x = x;
+        }
+
+        for (var i=min_y; i<=max_y; i++) {
+          for (var j=min_x; j<=max_x; j++) {
+            if (!(i == y && j == x)) {
+              var cell_value = $(".row-"+i+".col-"+j).attr("value");
+              //console.log(i+","+j+" = "+cell_value);
+              if ($(".row-"+i+".col-"+j).attr("value") == 1) {
+                //console.log("found neighbor "+i+","+j);
+                neighbors++;
+              }
+              else {
+                //console.log("no neighbor "+i+","+j);
+              }
+            }
+          }
+        }
+        
+        // apply game of life rules
+        //console.log("alive: "+current_life);
+        //console.log("neighbors: "+neighbors);
+        if (current_life == 1) {
+          if (neighbors < 2 || neighbors > 3) {
+            return 0;
+          }
+          else {
+            return 1;
+          }
+        }
+        else {
+          if (neighbors == 3) {
+            return 1;
+          }
+          else {
+            return 0;
+          }
+        }
+      }
+
+      function display_new_board($new_board) {
+        $("#current").remove();
+        $new_board.attr("id", "current");
+        $("body").append($new_board);
+      }
+
+      function calculate_next_turn() {
+        var $new_board = $("<table/>");
+        $new_board.attr("id", "new");
+        for (var i=0; i<number_cells[0]; i++) {
+          var $new_row = $("<tr/>");
+          for (var j=0; j<number_cells[1]; j++) {
+            var $new_cell = $("<td/>");
+            var destiny = life_or_death(i, j);
+            //console.log(i+","+j+" - "+destiny);
+
+            if (destiny == 1) {
+              $new_cell.attr("style", "background-color: black" + td_css);
+            }
+            else {
+              $new_cell.attr("style", "background-color: white" + td_css);
+            }
+            $new_cell.attr("class", "row-"+i+" col-"+j);
+            $new_cell.attr("value", destiny);
+
+            $($new_row).append($new_cell);
+          }
+          $new_board.append($new_row);
+        }
+        return $new_board;
+      }
+
+      function run_game() {
+        for (var turn=0; turn<1; turn++) {
+          display_new_board(calculate_next_turn());
+        //  var $next_turn = calculate_next_turn();
+        //  window.setTimeout(display_new_board($next_turn), 1000);
+        }
+      }
+
+      function start_game() {
+        number_cells = compute_num_cells();
+        create_board();
+        run_game();
+      }
+
+      $(start_game);
+    </script>
+  </body>
+</html>
